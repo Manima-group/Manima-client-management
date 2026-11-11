@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: manima
+      POSTGRES_USER: manima
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-manima}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U manima -d manima"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://manima:${POSTGRES_PASSWORD:-manima}@db:5432/manima
+      SECRET_KEY: ${SECRET_KEY:-please-change-me}
+      ADMIN_NAME: ${ADMIN_NAME:-Sai Naveen}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-business@manima.co.in}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-manima@123}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080}
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${PORT:-8080}:80"
+
+volumes:
+  pgdata:
