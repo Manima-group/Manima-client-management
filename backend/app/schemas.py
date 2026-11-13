@@ -206,5 +206,13 @@ class MeetingIn(BaseModel):
     notes: Optional[str] = None
 
 
+class IdeaIn(BaseModel):
+    title: Optional[str] = None
+    body: Optional[str] = None
+    category: Optional[str] = None
+    status: Optional[str] = None
+    pinned: Optional[bool] = None
+
+
 class SignIn(BaseModel):
     name: str = Field(min_length=2)

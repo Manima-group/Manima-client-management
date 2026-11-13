@@ -14,6 +14,7 @@ const NAV: { to: string; label: string; icon: string; count?: keyof Dashboard["c
   { to: "/projects", label: "Projects", icon: "projects", count: "projects" },
   { to: "/training", label: "Training", icon: "training", count: "training" },
   { to: "/team", label: "Team", icon: "team" },
+  { to: "/ideas", label: "Ideas", icon: "ideas" },
   { to: "/settings", label: "Settings", icon: "settings" },
 ];
 

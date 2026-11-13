@@ -86,6 +86,12 @@ export type TeamMember = {
   earned: number; paid: number; owed: number; projects: string[]; entries: MemberEntry[];
 };
 
+export type IdeaStatus = "new" | "exploring" | "doing" | "done" | "parked";
+export type Idea = {
+  id: number; title: string; body: string; category: string; status: IdeaStatus; pinned: boolean;
+  created_at: string; updated_at: string;
+};
+
 export type Meeting = {
   id: number; title: string; starts_at: string; location: string; client_id: number | null;
   lead_id: number | null; notes: string;
@@ -96,7 +102,11 @@ export type Dashboard = {
     collected: number; collected_count: number; outstanding: number; overdue_count: number;
     active_projects: number; active_project_clients: number; pipeline: number; pipeline_count: number;
     training_days_left: number; training_due: number;
+    period_services: number; period_training: number; billed: number;
+    total_earnings: number; total_services: number; total_training: number;
   };
+  period: { start: string; end: string };
+  top_clients: { name: string; amount: number; share: number }[];
   revenue: { label: string; services: number; training: number }[];
   trainings: Training[];
   documents: { type: "quotation" | "invoice"; id: number; number: string; client: string; status: string; amount: number; date: string }[];

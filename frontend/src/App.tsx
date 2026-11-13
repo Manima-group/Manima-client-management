@@ -16,6 +16,7 @@ import Projects from "./pages/Projects";
 import Training from "./pages/Training";
 import Team from "./pages/Team";
 import Settings from "./pages/Settings";
+import Ideas from "./pages/Ideas";
 import { PrintInvoice, PrintQuotation } from "./pages/Print";
 import Portal from "./pages/Portal";
 
@@ -57,6 +58,7 @@ function Authed() {
           <Route path="projects" element={<Projects />} />
           <Route path="training" element={<Training />} />
           <Route path="team" element={<Team />} />
+          <Route path="ideas" element={<Ideas />} />
           <Route path="settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

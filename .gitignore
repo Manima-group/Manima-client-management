@@ -52,3 +52,6 @@ htmlcov/
 # Operating system files
 .DS_Store
 Thumbs.db
+# Local tool folders
+.aws/
+.codex/
