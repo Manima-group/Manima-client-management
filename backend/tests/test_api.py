@@ -105,3 +105,34 @@ def test_team_and_leads(client):
     lead = client.post("/api/leads", json={"company": "New Co", "value": 5000}).json()
     out = client.post(f"/api/leads/{lead['id']}/convert").json()
     assert out["lead"]["stage"] == "won" and out["client"]["company"] == "New Co"
+
+
+def test_ideas(client):
+    a = client.post("/api/ideas", json={"title": "AI resume checker", "body": "For college students", "category": "Product"}).json()
+    b = client.post("/api/ideas", json={"title": "YouTube series on n8n", "category": "Content"}).json()
+    assert a["status"] == "new" and not a["pinned"]
+    assert client.post("/api/ideas", json={"title": "  "}).status_code == 422
+    client.put(f"/api/ideas/{b['id']}", json={"pinned": True, "status": "exploring"})
+    ideas = client.get("/api/ideas").json()
+    assert ideas[0]["id"] == b["id"]  # pinned first
+    assert [i["title"] for i in client.get("/api/ideas?q=resume").json()] == ["AI resume checker"]
+    assert len(client.get("/api/ideas?status=exploring").json()) == 1
+    assert client.delete(f"/api/ideas/{a['id']}").status_code == 204
+
+
+def test_dashboard_earnings_filter(client):
+    from datetime import date, timedelta
+    all_time = client.get("/api/dashboard?start=2000-01-01").json()
+    k = all_time["kpis"]
+    assert k["total_earnings"] == k["total_services"] + k["total_training"]
+    assert k["collected"] == k["total_earnings"]  # whole history selected
+    assert 6 <= len(all_time["revenue"]) <= 24  # from the first payment, capped at 24 months
+    today = date.today()
+    month = client.get(f"/api/dashboard?start={today.replace(day=1)}&end={today}").json()
+    assert month["kpis"]["collected"] <= k["total_earnings"]
+    assert month["kpis"]["total_earnings"] == k["total_earnings"]
+    assert len(month["revenue"]) == 6
+    shares = sum(c["share"] for c in all_time["top_clients"])
+    assert all_time["top_clients"] and shares <= 101
+    empty = client.get(f"/api/dashboard?start={today + timedelta(days=400)}&end={today + timedelta(days=401)}").json()
+    assert empty["kpis"]["collected"] == 0 and empty["top_clients"] == []
