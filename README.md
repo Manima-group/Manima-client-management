@@ -1,69 +1,116 @@
 # Manima Client Hub
 
-Manima's internal workspace for leads, clients, quotations, invoices, projects, college and corporate training, the team, and a client portal.
+Manima's internal workspace for **leads, clients, quotations, invoices, projects, college and corporate training, the team, ideas**, and a **client portal** — in one app.
 
-- **Backend:** FastAPI, SQLAlchemy 2, PostgreSQL (SQLite for local development), JWT login
-- **Frontend:** React 18, TypeScript, Vite, and plain CSS in the final yellow / orange / pink / grey UI
-- **Deploy:** Docker Compose (Postgres + API + Nginx serving the app)
+**Live:** https://hub.manima.co.in
 
-## Run it with Docker (recommended)
+| Layer | Technology | Hosted on |
+|---|---|---|
+| Frontend | React 18, TypeScript, Vite, plain CSS | Cloudflare Pages |
+| Backend | Python 3.12, FastAPI, SQLAlchemy 2, JWT login | Render (Singapore) |
+| Database | PostgreSQL | Supabase |
+| Domain | `hub.manima.co.in` (CNAME at GoDaddy) | GoDaddy DNS |
+
+📘 **Full step-by-step deployment guide: [DEPLOYMENT.md](DEPLOYMENT.md)**
+
+---
+
+## Features
+
+| Section | What you can do |
+|---|---|
+| **Dashboard** | Earnings for any period (This month, Last month, Last 3 months, This FY, Last FY, All time, Custom), total earnings, outstanding, active projects, pipeline, training days left, revenue chart (services vs training), earnings by client, trainings in progress, recent documents, upcoming meetings, "needs attention" list |
+| **Leads** | Pipeline New → Contacted → Proposal sent → Won, deal value, source, follow-up date; "Mark won" creates the client |
+| **Clients** | One profile per client: billed and outstanding totals, full history, quotations, invoices, projects, trainings, client portal link |
+| **Quotations** | Manima quotation template with live preview; any work/product/service (unit, qty, price, "quoted on selection"), GST excluded / added / none, discount, payment schedule presets, editable terms with `{client}`, signature; PDF, duplicate, convert to invoice, create project |
+| **Invoices** | GST tax invoices (CGST + SGST), part or full payments, overdue detection, PDF |
+| **Projects** | Task boards with assignees, progress and status |
+| **Training** | Colleges and corporate: contact, programme, tools, day-by-day session plan, timing, trainees, pricing per head / per day / fixed; Proposal → Confirmed → Ongoing → Completed; "mark today's session taught", days left, payments, GST invoice |
+| **Team** | Members, roles, earned / paid / owed, payouts, optional sign-in |
+| **Ideas** | Quick capture, categories, pin to top, status New → Exploring → Doing → Done / Parked, search |
+| **Settings** | Company details on documents, bank / UPI details, numbering (`MNM/{year}/001`, `INV-0001`), default GST, default terms, password |
+| **Client portal** | `/portal/<secret link>`: clients see progress, view and sign quotations, view and download invoices |
+
+---
+
+## Run it on your computer
+
+Requirements: Python 3.12, Node.js 20, PostgreSQL (pgAdmin optional).
+
+**1. Create an empty database** named `manima-hub` (pgAdmin → Create → Database).
+
+**2. Create `backend/.env`** (Git ignores it). One `export` per line, your own values:
 
 ```bash
-cp .env.example .env        # then edit the passwords and SECRET_KEY
-docker compose up -d --build
+export DATABASE_URL="postgresql+psycopg://postgres:<LOCAL_PG_PASSWORD>@localhost:5432/manima-hub"
+export SEED_DEMO_DATA=false
+export ADMIN_NAME="<your name>"
+export ADMIN_EMAIL="<your email>"
+export ADMIN_PASSWORD="<choose a password>"
+export SECRET_KEY="<run: openssl rand -hex 32>"
 ```
 
-Open http://localhost:8080 and sign in with `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.env`
-(defaults: `business@manima.co.in` / `manima@123`). **Change the password in Settings after your first sign-in.**
-
-`SEED_DEMO_DATA=true` loads sample clients, trainings and invoices on the first start so you can try everything.
-To start with an empty workspace, set it to `false` **before** the first start (or run `docker compose down -v` to wipe the database and start again).
-
-## Run it locally (development)
+**3. Start the backend** — on first start it creates all tables and your owner login:
 
 ```bash
-# terminal 1 — API on :8000 (uses SQLite file manima.db)
 cd backend
-python -m venv .venv && source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+source .env
 uvicorn app.main:app --reload
+```
 
-# terminal 2 — app on :5173 (proxies /api to :8000)
+`http://127.0.0.1:8000/api/health` → `{"status":"ok"}` · API docs at `/docs`.
+(`http://127.0.0.1:8000/` showing `Not Found` is normal — the API lives under `/api`.)
+
+**4. Start the frontend** (second terminal):
+
+```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-API docs: http://localhost:8000/docs · Tests: `cd backend && pytest`
+Open http://localhost:5173 and sign in with `ADMIN_EMAIL` / `ADMIN_PASSWORD`.
 
-## What's inside
+**5. Tests:** `cd backend && pytest`
 
-| Section       | What you can do                                                                                                                                                                                                                                                                                                           |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Dashboard     | Money collected this month, outstanding, active projects, open pipeline, training days left; revenue chart (services vs training); trainings in progress; recent quotations and invoices; upcoming meetings and training days; a "needs attention" list                                                                   |
-| Leads         | Pipeline New → Contacted → Proposal sent → Won, deal value, source, follow-up date; "Mark won" creates the client                                                                                                                                                                                                      |
-| Clients       | One profile per client with billed and outstanding totals, full history, quotations, invoices, projects, trainings, and a client portal link                                                                                                                                                                              |
-| Quotations    | Your Manima quotation template with a live preview. Add any work, product or service (unit, qty, price, quoted on selection), GST excluded / added / none, discount, payment schedule with presets, editable terms with `{client}`, signature. Download PDF, mark sent, duplicate, convert to invoice, create a project |
-| Invoices      | GST tax invoices (CGST + SGST split), part or full payments, overdue detection, PDF                                                                                                                                                                                                                                       |
-| Projects      | Task boards with assignees, progress and status; created by hand or from a quotation                                                                                                                                                                                                                                      |
-| Training      | Colleges and corporate: contact, programme, tools, day-by-day session plan, timing, trainees, pricing per student / per day / fixed. Proposal → Confirmed → Ongoing → Completed, "mark today's session taught", days left, payments, GST invoice for the balance                                                       |
-| Team          | Members, roles, projects, money earned / paid / owed, record payouts, optional sign-in for team members                                                                                                                                                                                                                   |
-| Settings      | Company details printed on documents, bank / UPI details, numbering (`MNM/{year}/001`, `INV-0001`), default GST, invoice due days, default terms, password                                                                                                                                                            |
-| Client portal | `/portal/<secret link>`: the client sees project progress, views and signs quotations, and views and downloads invoices — no password needed; reset the link any time                                                                                                                                                  |
+> Set `SEED_DEMO_DATA=true` (before the first start, on an empty database) to load sample clients, trainings and invoices for trying things out.
 
-### PDFs
+---
 
-"Download PDF" opens a print-ready page (US Letter, like your template) and the browser's print window — choose **Save as PDF**. Terms & conditions start on page 2.
+## How to deploy (summary)
 
-### Money rules
+The full walkthrough with screenshots-level detail, environment variables and troubleshooting is in **[DEPLOYMENT.md](DEPLOYMENT.md)**. In short:
 
-- A quotation's total uses only items that are not "quoted on selection", minus discount, plus GST only when GST mode is "added".
-- Converting a quotation to an invoice always produces a GST invoice at the quotation's rate (unless GST mode is "none").
-- Training fee = rate × students (per head), rate × days (per day), or the fixed fee. A payment on a training invoice is also recorded on the training.
+1. **Supabase** — create a project (Singapore or Mumbai). Copy **Connect → Direct → Session pooler** string; change `postgresql://` to `postgresql+psycopg://`, insert the password, add `?sslmode=require`. Turn off the Data API (or enable RLS).
+2. **Render** — New Web Service from this repo: Root Directory `backend`, build `pip install -r requirements.txt`, start `uvicorn app.main:app --host 0.0.0.0 --port $PORT`, region Singapore. Add `DATABASE_URL`, `SECRET_KEY`, `ADMIN_*`, `SEED_DEMO_DATA=false`, `CORS_ORIGINS`, `PYTHON_VERSION=3.12.7`. First start creates the tables.
+3. **Cloudflare Pages** (Pages, not Workers) — root `frontend`, build `npm run build`, output `dist`, variables `API_URL=<Render URL>` and `NODE_VERSION=20`. `frontend/functions/api/[[path]].js` forwards `/api/*` to Render.
+4. **Domain** — Pages → Custom domains → `hub.manima.co.in`; GoDaddy DNS → CNAME `hub` → `<project>.pages.dev`. Don't change nameservers.
+5. **Keep awake** — cron-job.org pings `<Render URL>/api/health` every 10 minutes (Render free sleeps after 15 idle minutes).
 
-### Going live checklist
+**Updating:** `git push` to `main` → Render and Cloudflare redeploy automatically; new tables are created on startup.
 
-1. Set strong `POSTGRES_PASSWORD`, `SECRET_KEY` and `ADMIN_PASSWORD` in `.env`.
-2. Put the app behind HTTPS (for example Caddy or an Nginx reverse proxy with Let's Encrypt) and set `CORS_ORIGINS` to your domain.
-3. Fill in Settings (bank / UPI details, numbering) before sending your first invoice.
-4. Back up the `pgdata` volume (`docker compose exec db pg_dump -U manima manima > backup.sql`).
+---
+
+## Project layout
+
+```
+backend/    FastAPI app (deployed to Render)
+  app/        main.py, config.py, db.py, models.py, seed.py, routers/
+  tests/      pytest suite
+frontend/   React app (deployed to Cloudflare Pages)
+  functions/  Cloudflare Pages Function: /api proxy
+  src/        pages, components, styles
+docker-compose.yml  optional single-server Docker setup (not used by the free deployment)
+DEPLOYMENT.md       full deployment guide
+```
+
+---
+
+## Security
+
+- Never commit `.env`, `.venv`, `.aws`, database files or real connection strings.
+- Keep secrets only in Render → Environment, Cloudflare → Variables and Secrets, and your local `backend/.env`.
+- Change the owner password in **Settings** after the first sign-in; rotate any credential that was ever shared.
+- See the checklist in [DEPLOYMENT.md → Security checklist](DEPLOYMENT.md#15-security-checklist).
