@@ -194,7 +194,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 
 /* ---------- document (quotation / invoice) ---------- */
 .doc-wrap { overflow-x: auto; }
-.doc { width: 816px; min-width: 816px; background: #fff; box-shadow: 0 2px 14px rgba(31,42,46,.12); padding: 40px 56px 32px; font-family: Tinos, "Times New Roman", serif; color: #111; font-size: 13px; line-height: 1.45; display: flex; flex-direction: column; gap: 14px; }
+.doc { -webkit-print-color-adjust: exact; print-color-adjust: exact; width: 816px; min-width: 816px; background: #fff; box-shadow: 0 2px 14px rgba(31,42,46,.12); padding: 40px 56px 32px; font-family: Tinos, "Times New Roman", serif; color: #111; font-size: 13px; line-height: 1.45; display: flex; flex-direction: column; gap: 14px; }
 .doc .logo { display: flex; justify-content: center; }
 .doc .logo img { width: 86px; }
 .doc .brandline { display: flex; align-items: baseline; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid #BFBFBF; }
@@ -227,6 +227,9 @@ table.table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .print-only { display: none; }
 @page { size: letter; margin: 0.45in 0.5in; }
 @media print {
+  /* Keep the navy table headers, totals and row shading in the PDF even when
+     the browser's "Background graphics" option is off. */
+  html, body, .doc, .doc * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   body { background: #fff; }
   .no-print { display: none !important; }
   .print-only { display: block; }
